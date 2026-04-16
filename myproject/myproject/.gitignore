@@ -1,0 +1,61 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Media and static files (optional depending on setup)
+media/
+staticfiles/
+
+# Environment variables
+.env
+.env.*
+
+# Virtual environment
+venv/
+env/
+ENV/
+.venv/
+
+# Python packaging
+*.egg-info/
+dist/
+build/
+
+# IDE/editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Migrations (optional — usually keep them in version control)
+# */migrations/*
+# !*/migrations/__init__.py
+
+# Coverage and test reports
+htmlcov/
+.coverage
+.coverage.*
+.cache
+pytest_cache/
+
+# Secrets
+*.pem
+*.key
+
+# Celery beat schedule file (if using Celery)
+celerybeat-schedule
+
+# Docker (if used)
+*.pid
+*.seed
