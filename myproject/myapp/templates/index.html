@@ -4,32 +4,143 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SWOT Analyzer - Evaluate Your Ideas!</title>
+    <title>SWOT Analyzer - Premium Business Analysis</title>
     <link rel="stylesheet" href="{% static 'style.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay hidden">
+        <div class="spinner">
+            <div class="spinner-ring"></div>
+            <p>Analyzing your idea...</p>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Login/Register Modal -->
+    <div id="authModal" class="modal-overlay">
+        <div class="modal-content auth-modal">
+            <span class="close-modal" onclick="closeAuthModal()">&times;</span>
+            
+            <div id="loginForm">
+                <h2><i class="fas fa-sign-in-alt"></i> Login</h2>
+                <input type="text" id="loginUsername" placeholder="Username">
+                <input type="password" id="loginPassword" placeholder="Password">
+                <button onclick="doLogin()" class="primary-btn">Login</button>
+                <p>Don't have an account? <a href="#" onclick="showRegister()">Register</a></p>
+            </div>
+            
+            <div id="registerForm" class="hidden">
+                <h2><i class="fas fa-user-plus"></i> Register</h2>
+                <input type="text" id="regUsername" placeholder="Username">
+                <input type="email" id="regEmail" placeholder="Email">
+                <input type="password" id="regPassword" placeholder="Password">
+                <button onclick="doRegister()" class="primary-btn">Register</button>
+                <p>Already have an account? <a href="#" onclick="showLogin()">Login</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Premium Modal -->
+    <div id="premiumModal" class="modal-overlay">
+        <div class="modal-content premium-modal">
+            <span class="close-modal" onclick="closePremiumModal()">&times;</span>
+            <div class="premium-header">
+                <i class="fas fa-crown"></i>
+                <h2>Upgrade to Premium</h2>
+            </div>
+            <div class="premium-price">
+                <span class="price">₹350</span>
+                <span class="period">/month</span>
+            </div>
+            <ul class="premium-features">
+                <li><i class="fas fa-check"></i> Unlimited SWOT Analyses</li>
+                <li><i class="fas fa-check"></i> Detailed Feasibility Reports</li>
+                <li><i class="fas fa-check"></i> AI-Powered Insights</li>
+                <li><i class="fas fa-check"></i> Export PDF Reports</li>
+                <li><i class="fas fa-check"></i> Priority Support</li>
+                <li><i class="fas fa-check"></i> No Advertisements</li>
+            </ul>
+            <button onclick="activatePremium()" class="premium-btn">Upgrade Now</button>
+            <p class="premium-note">Cancel anytime</p>
+        </div>
+    </div>
+
     <div class="container">
         <header>
-            <h1 class="logo"><i class="fas fa-lightbulb"></i> SWOT Analyzer</h1>
-            <p>Analyze your startup idea, feature, or curiosity with AI-powered SWOT insights!</p>
+            <div class="header-top">
+                <h1 class="logo"><i class="fas fa-lightbulb"></i> SWOT Analyzer</h1>
+                <div id="userPanel" class="user-panel">
+                    <button id="loginBtn" onclick="showAuthModal()"><i class="fas fa-sign-in-alt"></i> Login</button>
+                    <div id="userInfo" class="hidden">
+                        <span id="userName"></span>
+                        <span id="premiumBadge" class="premium-badge hidden"><i class="fas fa-crown"></i> Premium</span>
+                        <button onclick="doLogout()"><i class="fas fa-sign-out-alt"></i></button>
+                    </div>
+                </div>
+            </div>
+            <p>Analyze your startup idea with AI-powered SWOT & Feasibility insights!</p>
+            <div id="usageInfo" class="usage-info hidden">
+                <span id="remainingUses"></span>
+            </div>
         </header>
 
         <main>
             <section class="input-section">
                 <textarea id="ideaInput" placeholder="Enter your idea here... e.g., An AI-powered personalized learning app for K-12 students"></textarea>
-                <button id="analyzeBtn"><i class="fas fa-magic"></i> Generate SWOT &amp; Ideas</button>
+                <div class="button-group">
+                    <button id="analyzeBtn" class="primary-btn"><i class="fas fa-magic"></i> Generate SWOT</button>
+                    <button id="feasibilityBtn" class="secondary-btn"><i class="fas fa-file-alt"></i> Feasibility Report</button>
+                </div>
             </section>
 
-            <section id="varietySection">
-                <h2><i class="fas fa-layer-group"></i> Explore Variety of Ideas by Field</h2>
-                <div id="varietyGrid" class="variety-grid">
+            <!-- Market Data Panel -->
+            <section id="marketSection" class="hidden">
+                <h2><i class="fas fa-chart-pie"></i> Market Insights</h2>
+                <div id="marketGrid" class="market-grid">
+                    <div class="market-card">
+                        <h4><i class="fas fa-industry"></i> Industry</h4>
+                        <p id="industryName">-</p>
+                    </div>
+                    <div class="market-card">
+                        <h4><i class="fas fa-chart-line"></i> Market Size</h4>
+                        <p id="marketSize">-</p>
+                    </div>
+                    <div class="market-card">
+                        <h4><i class="fas fa-arrow-trend-up"></i> Growth</h4>
+                        <p id="marketGrowth">-</p>
+                    </div>
+                    <div class="market-card">
+                        <h4><i class="fas fa-users"></i> Key Players</h4>
+                        <p id="keyPlayers">-</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Feasibility Report Section -->
+            <section id="feasibilitySection" class="hidden">
+                <div class="feasibility-header">
+                    <h2><i class="fas fa-file-alt"></i> Feasibility Report</h2>
+                    <button id="saveFeasibilityBtn" class="save-btn"><i class="fas fa-save"></i> Save Report</button>
+                </div>
+                <div id="feasibilityContent" class="feasibility-content">
                     <!-- Populated by JS -->
                 </div>
             </section>
 
+            <section id="varietySection">
+                <h2><i class="fas fa-layer-group"></i> Explore Ideas by Field</h2>
+                <div id="varietyGrid" class="variety-grid"></div>
+            </section>
+
             <section id="swotSection" class="hidden">
-                <h2><i class="fas fa-chart-line"></i> SWOT Analysis</h2>
+                <div class="swot-header">
+                    <h2><i class="fas fa-chart-line"></i> SWOT Analysis</h2>
+                    <button id="saveSwotBtn" class="save-btn"><i class="fas fa-save"></i> Save</button>
+                </div>
                 <div class="swot-grid">
                     <div class="swot-card strengths">
                         <h3><i class="fas fa-thumbs-up"></i> Strengths</h3>
@@ -49,14 +160,19 @@
                     </div>
                 </div>
             </section>
+
+            <!-- History Section -->
+            <section id="historySection" class="hidden">
+                <h2><i class="fas fa-history"></i> Your History</h2>
+                <div id="historyList" class="history-list"></div>
+            </section>
         </main>
 
         <footer>
-            <p>&amp; Powered by creativity </p>
+            <p>&copy; SWOT Analyzer - Professional Business Analysis</p>
         </footer>
     </div>
 
     <script src="{% static 'script.js' %}"></script>
-
 </body>
 </html>

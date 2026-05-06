@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-4^9nm4@l+#_t+d8dzebe)sryk1*lk5x(=3m&b7^d8=a@sv1hw3
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -120,3 +120,10 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATIC_ROOT= BASE_DIR/ 'productionfiles'
+
+# CORS settings for API access
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = False
+
+# Allow csrf exempt for API views
+CSRF_EXEMPT = True
