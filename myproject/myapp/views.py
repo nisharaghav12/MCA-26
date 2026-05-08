@@ -14,6 +14,9 @@ from .swot_engine import swot_engine
 from .models import SWOTAnalysis, UserProfile
 import json
 import random
+import google.generativeai as genai
+from django.conf import settings
+from rest_framework.decorators import api_view
 
 
 def home(request):
@@ -178,74 +181,164 @@ def market_research_api(request):
     })
 
 
-@csrf_exempt
-@require_http_methods(["POST"])
+import json
+from django.http import JsonResponse
+from rest_framework.decorators import api_view
+from openai import OpenAI
+
+# GROQ CLIENT
+client = OpenAI(
+    api_key="",
+    base_url="https://api.groq.com/openai/v1"
+)
+
+
+@api_view(['POST'])
 def generate_swot_api(request):
-    """API endpoint for generating SWOT analysis"""
+    """Generate SWOT analysis using Groq AI"""
+
     try:
         body = json.loads(request.body)
+
     except json.JSONDecodeError:
-        return JsonResponse({'error': 'Invalid JSON body'}, status=400)
-    
+        return JsonResponse({
+            'success': False,
+            'error': 'Invalid JSON body'
+        }, status=400)
+
     idea = body.get('idea', '').strip()
     is_detailed = body.get('detailed', False)
-    
-    if not idea:
-        return JsonResponse({'error': 'Idea is required'}, status=400)
-    
-    # Check user limits (if authenticated)
-    user = request.user
-    if user.is_authenticated:
-        try:
-            profile = user.profile
-            if not profile.can_use_free and not profile.is_premium:
-                return JsonResponse({
-                    'success': False,
-                    'premium_required': True,
-                    'message': 'Free usage limit reached. Upgrade to Premium for unlimited access!',
-                    'price': UserProfile.PREMIUM_PRICE,
-                    'features': [
-                        'Unlimited SWOT analyses',
-                        'Detailed feasibility reports',
-                        'AI-powered insights',
-                        'Export PDF reports'
-                    ]
-                }, status=403)
-        except UserProfile.DoesNotExist:
-            profile = UserProfile.objects.create(user=user)
-    
-    # Get market data
-    market_data = marketplace_service.get_market_data(idea)
-    
-    # Generate SWOT
-    swot = swot_engine.generate_swot(idea, market_data)
-    
-    # Generate detailed report if requested
-    detailed_report = None
-    if is_detailed:
-        detailed_report = swot_engine.generate_detailed_report(idea, market_data)
-    
-    result = {
-        'success': True,
-        'swot': swot,
-        'market_data': market_data,
-        'idea': idea,
-        'is_detailed': is_detailed
-    }
-    
-    if detailed_report:
-        result['detailed_report'] = detailed_report
-    
-    # Update user usage
-    if user.is_authenticated:
-        try:
-            profile = user.profile
-            profile.increment_usage()
-        except UserProfile.DoesNotExist:
-            pass
-    
-    return JsonResponse(result)
 
+    if not idea:
+        return JsonResponse({
+            'success': False,
+            'error': 'Idea is required'
+        }, status=400)
+
+    try:
+
+        # ===== MARKET DATA =====
+        market_data = marketplace_service.get_market_data(idea)
+
+        # ===== SWOT PROMPT =====
+        prompt = f"""
+        Perform a professional SWOT analysis for the following startup/business idea.
+
+        Business Idea:
+        {idea}
+
+        Market Data:
+        {json.dumps(market_data, indent=2)}
+
+        Generate response in valid JSON format only.
+
+        {{
+            "strengths": [
+                "point 1",
+                "point 2"
+            ],
+            "weaknesses": [
+                "point 1",
+                "point 2"
+            ],
+            "opportunities": [
+                "point 1",
+                "point 2"
+            ],
+            "threats": [
+                "point 1",
+                "point 2"
+            ],
+            "summary": "Short feasibility summary"
+        }}
+
+        Do not add markdown.
+        Do not add explanation outside JSON.
+        """
+
+        # ===== GROQ AI RESPONSE =====
+        response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ],
+            temperature=0.7
+        )
+
+        print("response SWOT:")
+        print(response)
+        generated_text = response.choices[0].message.content
+
+        print("Generated SWOT:")
+        print(generated_text)
+
+        # Clean response
+        generated_text = generated_text.replace(
+            "```json", ""
+        ).replace(
+            "```", ""
+        ).strip()
+
+        # Convert AI response to JSON
+        swot = json.loads(generated_text)
+
+        # ===== DETAILED REPORT =====
+        detailed_report = None
+
+        if is_detailed:
+
+            detailed_prompt = f"""
+            Create a detailed business feasibility report for:
+
+            Business Idea:
+            {idea}
+
+            SWOT:
+            {json.dumps(swot, indent=2)}
+
+            Include:
+            - Market Potential
+            - Revenue Opportunities
+            - Competitor Analysis
+            - Risks
+            - Growth Possibilities
+            - Final Recommendation
+
+            Return clean HTML response.
+            """
+
+            detailed_response = client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=[
+                    {
+                        "role": "user",
+                        "content": detailed_prompt
+                    }
+                ],
+                temperature=0.7
+            )
+
+            detailed_report = detailed_response.choices[0].message.content
+
+        # ===== FINAL RESPONSE =====
+        result = {
+            'success': True,
+            'idea': idea,
+            'market_data': market_data,
+            'swot': swot,
+            'is_detailed': is_detailed
+        }
+
+        return JsonResponse(result)
+
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
 
 @csrf_exempt
 @require_http_methods(["POST"])
