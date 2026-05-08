@@ -127,3 +127,6 @@ CORS_ALLOW_CREDENTIALS = False
 
 # Allow csrf exempt for API views
 CSRF_EXEMPT = True
+
+from decouple import config
+GEMINI_API_KEY = config("GEMINI_API_KEY")

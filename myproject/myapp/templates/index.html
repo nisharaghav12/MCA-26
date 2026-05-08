@@ -92,7 +92,8 @@
             <section class="input-section">
                 <textarea id="ideaInput" placeholder="Enter your idea here... e.g., An AI-powered personalized learning app for K-12 students"></textarea>
                 <div class="button-group">
-                    <button id="analyzeBtn" class="primary-btn"><i class="fas fa-magic"></i> Generate SWOT</button>
+                    <button onClick="() => generateSwot()" id="analyzeBtn" class="primary-btn"><i class="fas fa-magic"></i> Generate
+                        SWOT</button>
                     <button id="feasibilityBtn" class="secondary-btn"><i class="fas fa-file-alt"></i> Feasibility Report</button>
                 </div>
             </section>
@@ -173,6 +174,62 @@
         </footer>
     </div>
 
-    <script src="{% static 'script.js' %}"></script>
+    <script src="../static/script.js">
+        async function generateSwot() {
+            const idea = document.getElementById('ideaInput').value.trim();
+
+            if (!isValidIdea(idea)) {
+                showInvalidPopup();
+                return;
+            }
+
+            console.log("idea is valid 122");
+
+            showLoading(true);
+
+            try {
+                const res = await fetch('/api/swot/generate/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        idea,
+                        detailed: true,
+                        detail: 'garsgwlckdw'
+                    })
+                });
+
+                const data = await res.json();
+
+                console.log("data is coming");
+                console.log(data);
+
+                if (data.premium_required) {
+                    showLoading(false);
+                    showPremiumModal();
+                    showToast(data.message, 'error');
+                    return;
+                }
+
+                currentSwot = data.swot;
+                currentMarketData = data.market_data;
+
+                displayMarketData(data.market_data);
+                displaySwot(data.swot);
+
+                document.getElementById('swotSection').classList.remove('hidden');
+                document.getElementById('feasibilitySection').classList.add('hidden');
+
+                checkUserStatus();
+
+            } catch (e) {
+                console.error(e);
+                showToast('Error generating SWOT', 'error');
+            }
+
+            showLoading(false);
+        }
+    </script>
 </body>
 </html>

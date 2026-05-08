@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function setupEventListeners() {
-    document.getElementById('analyzeBtn').addEventListener('click', generateSwot);
+    // document.getElementById('analyzeBtn').addEventListener('click', generateSwot);
     document.getElementById('feasibilityBtn').addEventListener('click', generateFeasibility);
     document.getElementById('saveSwotBtn').addEventListener('click', saveSwot);
     document.getElementById('saveFeasibilityBtn').addEventListener('click', saveFeasibility);
@@ -163,39 +163,57 @@ async function activatePremium() {
 // ==================== SWOT GENERATION ====================
 async function generateSwot() {
     const idea = document.getElementById('ideaInput').value.trim();
-    if (!isValidIdea(idea)) { showInvalidPopup(); return; }
-    
+
+    if (!isValidIdea(idea)) {
+        showInvalidPopup();
+        return;
+    }
+
+    console.log("idea is valid 122");
+
     showLoading(true);
-    
+
     try {
         const res = await fetch('/api/swot/generate/', {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({idea, detailed: true})
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                idea,
+                detailed: true,
+                detail: 'garsgwlckdw'
+            })
         });
+
         const data = await res.json();
-        
+
+        console.log("data is coming");
+        console.log(data);
+
         if (data.premium_required) {
             showLoading(false);
             showPremiumModal();
             showToast(data.message, 'error');
             return;
         }
-        
+
         currentSwot = data.swot;
         currentMarketData = data.market_data;
-        
+
         displayMarketData(data.market_data);
         displaySwot(data.swot);
-        
+
         document.getElementById('swotSection').classList.remove('hidden');
         document.getElementById('feasibilitySection').classList.add('hidden');
-        
-        checkUserStatus(); // Update usage count
-    } catch(e) {
+
+        checkUserStatus();
+
+    } catch (e) {
+        console.error(e);
         showToast('Error generating SWOT', 'error');
     }
-    
+
     showLoading(false);
 }
 

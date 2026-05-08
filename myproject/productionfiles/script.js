@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function setupEventListeners() {
-    document.getElementById('analyzeBtn').addEventListener('click', generateSwot);
+    // document.getElementById('analyzeBtn').addEventListener('click', generateSwot);
     document.getElementById('feasibilityBtn').addEventListener('click', generateFeasibility);
     document.getElementById('saveSwotBtn').addEventListener('click', saveSwot);
     document.getElementById('saveFeasibilityBtn').addEventListener('click', saveFeasibility);
@@ -162,18 +162,22 @@ async function activatePremium() {
 
 // ==================== SWOT GENERATION ====================
 async function generateSwot() {
+    console.log("inside")
     const idea = document.getElementById('ideaInput').value.trim();
     if (!isValidIdea(idea)) { showInvalidPopup(); return; }
-    
+    console.log("idea is valid")
     showLoading(true);
     
     try {
+        console.log('Generating SWOT for idea:', idea);
         const res = await fetch('/api/swot/generate/', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({idea, detailed: true})
+            body: JSON.stringify({idea, detailed: true, data:"fdweif"})
         });
+        console.log(res);
         const data = await res.json();
+        console.log(data);
         
         if (data.premium_required) {
             showLoading(false);
@@ -182,11 +186,11 @@ async function generateSwot() {
             return;
         }
         
-        currentSwot = data.swot;
-        currentMarketData = data.market_data;
+        currentSwot = data?.swot;
+        currentMarketData = data?.market_data;
         
-        displayMarketData(data.market_data);
-        displaySwot(data.swot);
+        displayMarketData(data?.market_data);
+        displaySwot(data?.swot);
         
         document.getElementById('swotSection').classList.remove('hidden');
         document.getElementById('feasibilitySection').classList.add('hidden');
