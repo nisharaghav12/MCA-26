@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function setupEventListeners() {
-    // document.getElementById('analyzeBtn').addEventListener('click', generateSwot);
+    document.getElementById('analyzeBtn').addEventListener('click', generateSwot);
     document.getElementById('feasibilityBtn').addEventListener('click', generateFeasibility);
     document.getElementById('saveSwotBtn').addEventListener('click', saveSwot);
     document.getElementById('saveFeasibilityBtn').addEventListener('click', saveFeasibility);

@@ -77,7 +77,7 @@
                     <button id="loginBtn" onclick="showAuthModal()"><i class="fas fa-sign-in-alt"></i> Login</button>
                     <div id="userInfo" class="hidden">
                         <span id="userName"></span>
-                        <span id="premiumBadge" class="premium-badge hidden"><i class="fas fa-crown"></i> Premium</span>
+                        <!-- <span id="premiumBadge" class="premium-badge hidden"><i class="fas fa-crown"></i> Premium</span> -->
                         <button onclick="doLogout()"><i class="fas fa-sign-out-alt"></i></button>
                     </div>
                 </div>
@@ -92,7 +92,7 @@
             <section class="input-section">
                 <textarea id="ideaInput" placeholder="Enter your idea here... e.g., An AI-powered personalized learning app for K-12 students"></textarea>
                 <div class="button-group">
-                    <button onClick="() => generateSwot()" id="analyzeBtn" class="primary-btn"><i class="fas fa-magic"></i> Generate SWOT</button>
+                    <button id="analyzeBtn" class="primary-btn"><i class="fas fa-magic"></i> Generate SWOT</button>
                     <button id="feasibilityBtn" class="secondary-btn"><i class="fas fa-file-alt"></i> Feasibility Report</button>
                 </div>
             </section>
